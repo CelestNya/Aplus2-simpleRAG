@@ -1,0 +1,32 @@
+# SimpleRAG Configuration
+# 更改文件名为config.yaml后，即可使用该配置文件
+
+# LLM Configuration (OpenAI compatible API)
+llm:
+  base_url: "https://api.minimaxi.com/v1"
+  model: "MiniMax-M2.7"
+  api_key: ""
+
+# Embedding Configuration
+embedding:
+  model_path: "D:/Resources/Models/Qwen3-Embedding-0.6B"
+  dimension: 1024
+
+# Vector Store Configuration
+vectorstore:
+  persist_dir: "./data/chroma"
+
+# Search Configuration
+search:
+  default_top_k: 5
+  hard_cap: 50.0          # Absolute distance threshold; results above this are discarded
+  filter_delta: 0.3       # Relative threshold window: keep results within min_dist + delta
+
+# Chunking Configuration
+chunking:
+  chunk_size: 500
+  chunk_overlap: 50
+
+# Document Paths
+documents:
+  input_dir: "./documents"
