@@ -21,11 +21,15 @@ search:
   default_top_k: 5
   hard_cap: 50.0          # Absolute distance threshold; results above this are discarded
   filter_delta: 0.3       # Relative threshold window: keep results within min_dist + delta
+  post_process: true      # Enable keyword matching, boosting, deduplication, and filtering
 
 # Chunking Configuration
 chunking:
   chunk_size: 500
   chunk_overlap: 50
+  use_paragraph: true     # Enable paragraph chunking
+  use_small_window: true  # Enable small window (200 chars) for precise term matching
+  use_sliding: true      # Enable sliding window (400 chars, step 200) for boundary diversity
 
 # Document Paths
 documents:

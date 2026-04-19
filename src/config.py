@@ -33,6 +33,9 @@ class ChunkingConfig:
     """Chunking configuration for document processing."""
     chunk_size: int = 500
     chunk_overlap: int = 50
+    use_paragraph: bool = True
+    use_small_window: bool = True
+    use_sliding: bool = True
 
 
 @dataclass
@@ -41,6 +44,7 @@ class SearchConfig:
     default_top_k: int = 5
     hard_cap: float = 50.0       # Absolute distance cap; results above this are discarded
     filter_delta: float = 0.3    # Relative threshold: keep results within min_dist + delta
+    post_process: bool = True   # Enable keyword matching, boosting, and filtering
 
 
 @dataclass

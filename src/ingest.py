@@ -45,6 +45,9 @@ class IngestPipeline:
                     "chunk_overlap": 200,
                 },
             ],
+            use_paragraph=config.chunking.use_paragraph,
+            use_small_window=config.chunking.use_small_window,
+            use_sliding=config.chunking.use_sliding,
         )
 
     def run(self, input_dir: Path = None) -> int:

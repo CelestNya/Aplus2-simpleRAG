@@ -28,7 +28,7 @@ def main():
         print("  ingest         - Ingest documents into vector store")
         print("  chat           - Start interactive chat")
         print(f"  query <text>   - Search vector store directly")
-        print(f"                   Options: --top N (default: {config.search.default_top_k})")
+        print(f"                   Options: --top N, --no-post-process")
         print()
         print("Configuration:")
         print("  Edit config.yaml to configure LLM, embedding, and storage settings")
@@ -63,20 +63,30 @@ def main():
             print("Usage: python main.py query <search_query>")
             sys.exit(1)
 
-        query_text = " ".join(sys.argv[2:])
+        args = sys.argv[2:]
+        post_process = True
         top_k = config.search.default_top_k
 
-        # Allow optional top_k flag
-        if "--top" in sys.argv:
-            idx = sys.argv.index("--top")
-            if idx + 1 < len(sys.argv):
+        # Parse optional flags
+        if "--no-post-process" in args:
+            post_process = False
+            args = [a for a in args if a != "--no-post-process"]
+        if "--top" in args:
+            idx = args.index("--top")
+            if idx + 1 < len(args):
                 try:
-                    top_k = int(sys.argv[idx + 1])
+                    top_k = int(args[idx + 1])
                 except ValueError:
                     print("Error: --top must be followed by a number")
                     sys.exit(1)
+            args = [a for a in args if a != "--top" and a != args[idx + 1]]
 
-        results = vectorstore.search(query_text, top_k=top_k)
+        query_text = " ".join(args) if args else ""
+        if not query_text:
+            print("Usage: python main.py query <search_query>")
+            sys.exit(1)
+
+        results = vectorstore.search(query_text, top_k=top_k, post_process=post_process)
 
         if not results:
             print("No results found.")

@@ -40,10 +40,14 @@ search:
   default_top_k: 5
   hard_cap: 50.0
   filter_delta: 0.3
+  post_process: true      # 开启关键词匹配、Boost、去重、过滤；关闭则输出原始语义相似度
 
 chunking:
   chunk_size: 500
   chunk_overlap: 50
+  use_paragraph: true     # 段落分块（默认开启）
+  use_small_window: true  # 小窗口分块（200字），利于精确匹配专有名词
+  use_sliding: true      # 滑动窗口分块（400字，步长200），增加边界多样性
 
 documents:
   input_dir: "./documents"
@@ -122,6 +126,7 @@ uv run python main.py ingest                      # 摄入文档
 uv run python main.py chat                        # 启动聊天
 uv run python main.py query <搜索内容>              # 直接搜索向量库
 uv run python main.py query <搜索内容> --top 10    # 指定返回条数
+uv run python main.py query <搜索内容> --no-post-process  # 关闭后处理，输出原始语义距离
 uv run python main.py help                         # 帮助
 ```
 

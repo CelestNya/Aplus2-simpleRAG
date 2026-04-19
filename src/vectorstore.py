@@ -81,15 +81,25 @@ class VectorStore:
             embeddings=embeddings,
         )
 
-    def search(self, query_text: str, top_k: int = 5) -> list[SearchResult]:
+    def search(
+        self, query_text: str, top_k: int = 5, post_process: bool | None = None
+    ) -> list[SearchResult]:
         """Search with query expansion for exact keyword matches.
 
         For queries containing specific terms (like ChatGPT, GPT-4, etc.),
         performs an exact-match fallback search to supplement semantic similarity.
         This ensures precise matches aren't buried under semantically similar
         but contextually different content.
+
+        Args:
+            query_text: The search query
+            top_k: Number of results to return
+            post_process: Override config post_process setting. None uses config default.
         """
         collection = self._get_collection()
+        enable_post_process = (
+            post_process if post_process is not None else self._search_config.post_process
+        )
         query_keywords = self._extract_keywords(query_text)
 
         # Primary: semantic vector search
@@ -121,34 +131,33 @@ class VectorStore:
                     )
                 )
 
-        # Exact match fallback: if query has keywords, also search by exact match
-        exact_matches = []
-        if query_keywords:
-            exact_matches = self._exact_match_search(collection, query_keywords)
+        # Post-processing: exact match, keyword boost, deduplicate, filter
+        if enable_post_process:
+            # Exact match fallback: if query has keywords, also search by exact match
+            exact_matches = []
+            if query_keywords:
+                exact_matches = self._exact_match_search(collection, query_keywords)
 
-        # Merge: exact matches get a significant distance bonus
-        if exact_matches:
-            search_results = self._merge_exact_matches(
-                search_results, exact_matches, query_keywords
-            )
+            # Merge: exact matches get a significant distance bonus
+            if exact_matches:
+                search_results = self._merge_exact_matches(
+                    search_results, exact_matches, query_keywords
+                )
 
-        # Final keyword boost for fine-tuning within merged results
-        if query_keywords:
-            search_results = self._boost_keyword_matches(search_results, query_keywords)
+            # Final keyword boost for fine-tuning within merged results
+            if query_keywords:
+                search_results = self._boost_keyword_matches(search_results, query_keywords)
 
-        # Deduplicate by content: keep the one with lowest distance
-        search_results = self._deduplicate_results(search_results)
+            # Deduplicate by content: keep the one with lowest distance
+            search_results = self._deduplicate_results(search_results)
 
-        # Filter by relevance threshold
-        search_results = self._filter_irrelevant(search_results, query_keywords)
-
-        # If corpus has only 1 chunk, skip empty-corpus check
-        actual_count = self._get_collection().count()
+            # Filter by relevance threshold
+            search_results = self._filter_irrelevant(search_results, query_keywords)
 
         # Hard distance cap from config: results above this threshold are discarded.
         if (
             search_results
-            and actual_count > 1
+            and self._get_collection().count() > 1
             and search_results[0].distance > self._search_config.hard_cap
         ):
             return []

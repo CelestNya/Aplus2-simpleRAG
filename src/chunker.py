@@ -263,6 +263,9 @@ class MultiStrategyChunker:
         self,
         strategies: list[dict] = None,
         json_sensitive: bool = True,
+        use_paragraph: bool = True,
+        use_small_window: bool = True,
+        use_sliding: bool = True,
     ):
         """Initialize with chunking strategies.
 
@@ -272,13 +275,29 @@ class MultiStrategyChunker:
                 - chunk_overlap: int
                 - strategy: "paragraph" | "small_window" | "sliding"
             json_sensitive: Whether to detect JSON structures
+            use_paragraph: Enable paragraph chunking strategy
+            use_small_window: Enable small window chunking strategy
+            use_sliding: Enable sliding window chunking strategy
         """
         default_strategies = [
             {"strategy": "paragraph", "chunk_size": 500, "chunk_overlap": 50},
             {"strategy": "small_window", "chunk_size": 200, "chunk_overlap": 30},
             {"strategy": "sliding", "chunk_size": 400, "chunk_overlap": 200},
         ]
-        self.strategies = strategies or default_strategies
+        if strategies is not None:
+            self.strategies = strategies
+        else:
+            enabled = []
+            if use_paragraph:
+                enabled.append(default_strategies[0])
+            if use_small_window:
+                enabled.append(default_strategies[1])
+            if use_sliding:
+                enabled.append(default_strategies[2])
+            # Fall back to paragraph if all disabled
+            if not enabled:
+                enabled = [default_strategies[0]]
+            self.strategies = enabled
         self.json_sensitive = json_sensitive
 
     def chunk(self, text: str, source: str = "") -> list[Chunk]:
