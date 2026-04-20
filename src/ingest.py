@@ -59,6 +59,9 @@ class IngestPipeline:
         Returns:
             Number of documents processed
         """
+        # Clear existing vector store before ingestion
+        self.vectorstore.reset()
+
         input_dir = input_dir or Path(self.config.documents_input_dir)
         supported_exts = [".txt", ".md", ".json"]
 

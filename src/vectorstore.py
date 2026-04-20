@@ -56,6 +56,15 @@ class VectorStore:
             self._collection = client.get_or_create_collection(name="documents")
         return self._collection
 
+    def reset(self) -> None:
+        """Delete all documents from the collection."""
+        client = self._get_client()
+        try:
+            client.delete_collection(name="documents")
+        except Exception:
+            pass
+        self._collection = None
+
     def add_chunks(
         self,
         chunks: list[str],
